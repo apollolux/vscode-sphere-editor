@@ -1,4 +1,4 @@
-import { RColor } from '../common/rpg.internal';
+import { RColor } from './rpg.internal';
 
 /** Interface for Sphere binary raw bitmap images */
 export interface RBitmap {
@@ -6,7 +6,7 @@ export interface RBitmap {
 	height: number;
 	data: Uint8Array;
 	reserved: Uint8Array;
-};
+}
 
 /** Interface for parsed Sphere bitmap images */
 export interface RImage {

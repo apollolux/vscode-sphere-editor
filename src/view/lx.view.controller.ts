@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { TextDecoder } from "util";
 import { getNonce, readTextFile } from "../common/util";
 import path = require("path");
 
@@ -15,13 +14,13 @@ export default class LXViewController {
 		// Use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
 		// replace replaceables
-		ret = ret.replace('${NONCE}', nonce);
-		ret = ret.replace('${WV_SRC}', webview.cspSource);
-		let _css = css.map((it) => {
+		ret = ret.replace(/\$\{NONCE\}/gi, nonce);
+		ret = ret.replace(/\$\{WV_SRC\}/gi, webview.cspSource);
+		const _css = css.map((it) => {
 			let u = this.toLocalResource(it, webview);
 			return `<link href="${u}" rel="stylesheet" />`;
 		});
-		let _js = js.map((it) => {
+		const _js = js.map((it) => {
 			let u = this.toLocalResource(it, webview);
 			return `<script nonce="${nonce}" src="${u}" defer></script>`;
 		});
@@ -34,4 +33,4 @@ export default class LXViewController {
 			path.join(this._context.extensionPath, "dist", fn)
 		));
 	}
-};
+}

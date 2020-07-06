@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import path = require("path");
+
 import { SphereDocument, SphereDocumentState } from "./common/editor.document";
 import { disposeAll } from "./common/dispose";
 import { readTextFile } from "./common/util";
@@ -9,7 +11,8 @@ import * as ViewController from "./view/lx.view.controller";
 interface PacketRequest {
 	initialOffset: number;
 	numElements: number;
-};
+}
+
 
 export default class SphereEditor implements vscode.CustomEditorProvider<SphereDocument> {
 	public static register(context: vscode.ExtensionContext): vscode.Disposable {
@@ -21,7 +24,9 @@ export default class SphereEditor implements vscode.CustomEditorProvider<SphereD
 			}
 		);
 	}
-	static createFontEditor() {}
+	static createFontEditor(): void {
+		// TODO
+	}
 
 	private static readonly viewType = 'sphereEdit.font';
 	private readonly webviews = new WebviewCollection();
@@ -34,6 +39,7 @@ export default class SphereEditor implements vscode.CustomEditorProvider<SphereD
 		this.lxView = new ViewController.default(_context);
 		this.html = '';
 		this.htmlFont = '';
+		console.log("LX::Sphere", "Editor initialized");
 	}
 
 	async openCustomDocument(uri: vscode.Uri, openContext: vscode.CustomDocumentOpenContext, token: vscode.CancellationToken): Promise<SphereDocument> {
@@ -70,8 +76,12 @@ export default class SphereEditor implements vscode.CustomEditorProvider<SphereD
 		panel.webview.options = {
 			enableScripts: true,
 		};
-		if (!this.html) this.html = await readTextFile(vscode.Uri.file("./view/editor.html"));
-		if (!this.htmlFont) this.htmlFont = await readTextFile(vscode.Uri.file("./view/editor.font.html"));
+		if (!this.html) this.html = await readTextFile(vscode.Uri.file(
+			this.toLocalPath("dist", "view", "editor.html")
+		));
+		if (!this.htmlFont) this.htmlFont = await readTextFile(vscode.Uri.file(
+			this.toLocalPath("dist", "view", "editor.font.html")
+		));
 		// this.getHtmlForWebview offloaded to LXViewController or smth +asr 20200704
 		panel.webview.html = this.lxView.readFromString(
 			this.html,
@@ -125,6 +135,12 @@ export default class SphereEditor implements vscode.CustomEditorProvider<SphereD
 		return document.backup(context.destination, cancellation);
 		// throw new Error("Method not implemented.");
 	}
+
+	// LOCAL RESOURCES
+	private toLocalPath(...fn: string[]) {
+		return path.join(this._context.extensionPath, ...fn);
+	}
+	
 
 	// MESSAGE PASSING STUFF
 	private _reqId = 0;
@@ -180,4 +196,4 @@ export default class SphereEditor implements vscode.CustomEditorProvider<SphereD
 				return;
 		}
 	}
-};
+}

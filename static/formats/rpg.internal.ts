@@ -4,4 +4,4 @@ export interface RColor {
 	green: number;
 	blue: number;
 	alpha: number;
-};
+}

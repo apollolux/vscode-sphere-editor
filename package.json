@@ -4,7 +4,7 @@
 	"displayName": "Sphere Engine Font Editor",
 	"version": "1.0.0",
 	"description": "Sphere RFN editor",
-	"main": "./out/extension.js",
+	"main": "./out/src/extension.js",
 	"engines": {
 		"vscode": "^1.46.0"
 	},

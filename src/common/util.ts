@@ -8,9 +8,8 @@ import { TextDecoder } from "util";
 const TXD = new TextDecoder('utf-8');
 
 export async function readTextFile(uri: vscode.Uri): Promise<string> {
-	let f = await vscode.workspace.fs.readFile(uri);
-	let ret = TXD.decode(f);
-	return ret;
+	const f = await vscode.workspace.fs.readFile(uri);
+	return TXD.decode(f);
 }
 
  /**

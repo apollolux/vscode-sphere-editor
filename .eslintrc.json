@@ -21,25 +21,30 @@
 	"plugins": [
 		"@typescript-eslint/eslint-plugin"
 	],
+	"root": true,
 	"rules": {
 		"linebreak-style": [
 			"off",
 			"unix"
 		],
 		"quotes": [
-			"warn",
+			"off",
 			"double"
 		],
 		"semi": [
 			"error",
 			"always"
 		],
+		"prefer-const": "off",
 		"no-console": "off",
 		"no-var": 1,
 		"no-case-declarations": 0,
+		"@typescript-eslint/no-inferrable-types": 0,
 		"@typescript-eslint/no-explicit-any": 0,
+		"@typescript-eslint/no-unused-vars": 1,
 		"@typescript-eslint/camelcase": 0,
 		"@typescript-eslint/no-non-null-assertion": 0,
+		"@typescript-eslint/explicit-module-boundary-types": 1,
 		"object-curly-spacing": [
 			2,
 			"always"
