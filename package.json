@@ -9,13 +9,19 @@
 		"vscode": "^1.46.0"
 	},
 	"activationEvents": [
-		"onCommand:sphereEdit.message"
+		"onCommand:sphereEdit.message",
+		"onCustomEditor:sphereEdit.font",
+		"onCommand:sphereEdit.openFont"
 	],
 	"contributes": {
 		"commands": [
 			{
 				"command": "sphereEdit.message",
 				"title": "Sphere: Say Hello"
+			},
+			{
+				"command": "sphereEdit.openFont",
+				"title": "Sphere: Open RFN Font"
 			}
 		],
 		"customEditors": [

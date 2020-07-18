@@ -49,6 +49,8 @@ export class SphereDocument extends Disposable implements vscode.CustomDocument 
 		this._size = fileSize;
 		this._unsavedEdits = unsavedEdits;
 		this._edits = Array.from(unsavedEdits);
+		// console.log("LX::SPH", "DOC", this._uri, this._size);
+		// console.log("LX::SPH", "DATA", this._data.slice(0, 8));
 	}
 	public get uri(): vscode.Uri { return this._uri; }
 	public get data(): Uint8Array { return this._data; }
@@ -168,6 +170,7 @@ export class SphereDocument extends Disposable implements vscode.CustomDocument 
 
 	/** Revert to saved file on disk */
 	async revert(_cancelToken: vscode.CancellationToken): Promise<void> {
+		console.log("LX::SPH", "REV", _cancelToken);
 		const diskContent = await vscode.workspace.fs.readFile(this.uri);
 		this._size = diskContent.length;
 		this._data = diskContent;

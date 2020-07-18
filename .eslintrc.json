@@ -21,12 +21,7 @@
 	"plugins": [
 		"@typescript-eslint/eslint-plugin"
 	],
-	"root": true,
 	"rules": {
-		"linebreak-style": [
-			"off",
-			"unix"
-		],
 		"quotes": [
 			"off",
 			"double"

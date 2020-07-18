@@ -3,7 +3,7 @@ import { getNonce, readTextFile } from "../common/util";
 import path = require("path");
 
 /** View controller */
-export default class LXViewController {
+export class LXViewController {
 	constructor(private readonly _context: vscode.ExtensionContext) {}
 	public async readFromFile(uri: vscode.Uri, webview: vscode.Webview, css: string[] = [], js: string[] = []): Promise<string> {
 		let ret = await readTextFile(uri);

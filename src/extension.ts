@@ -9,12 +9,19 @@ export function activate(context: vscode.ExtensionContext): void {
 	console.log('LX::Sphere', 'Hello from Sphere!');
 	LX = new LXprovider(context);
 	SphereContext = SphereEditor.default.register(context);
-	let cmd = vscode.commands.registerCommand(
+	const cmdHello = vscode.commands.registerCommand(
 		'sphereEdit.message', () => {
 			vscode.window.showInformationMessage('Hello Sphere!');
 		}
 	);
-	LX.add(cmd);
+	const cmdOpenFont = vscode.commands.registerTextEditorCommand(
+		"sphereEdit.openFont",
+		(textEditor: vscode.TextEditor) => {
+			vscode.commands.executeCommand("vscode.openWith", textEditor.document.uri, "sphereEdit.font");
+		}
+	);
+	LX.add(cmdHello);
+	LX.add(cmdOpenFont);
 	LX.add(SphereContext);
 	// context.subscriptions.push(cmd);
 	context.subscriptions.push(...LX.commands);
@@ -22,3 +29,6 @@ export function activate(context: vscode.ExtensionContext): void {
 export function deactivate(): void {
 	// TODO: dispose disposables
 }
+
+
+// [![marketplace](https://badgen.net/vs-marketplace/v/henoc.svgeditor)](https://marketplace.visualstudio.com/items?itemName=henoc.svgeditor)

@@ -2,19 +2,23 @@
  * bundle.ts
  */
 
-import { VirtualDocument } from "./document";
+import { VirtualViewport } from "./viewport";
+import { ChunkHandler } from "./buffer";
 import { MessageHandler } from "./messenger";
 
 declare const acquireVsCodeApi: any;
 export const vscode = acquireVsCodeApi();
 
-export let sphereDocument: VirtualDocument; 
+export let sphereDocument: VirtualViewport; 
 export const Messenger = new MessageHandler(10);
+export const chunker: ChunkHandler = new ChunkHandler(Messenger);
 
 /** Main entry */
 ((W, D): void => {
+	// TODO: put message handler into front-end messenger like back-end
 	W.addEventListener('message', async e => {
 		// TODO
+		console.log("LX::SPH", "W>MSG", e.source, e.data.requestId, e.data.type, e.data.body);
 		const { type, body } = e.data;
 		switch (type) {
 			case "init": {
@@ -23,13 +27,19 @@ export const Messenger = new MessageHandler(10);
 					// TODO
 					const doc = D.body;
 					doc.innerHTML = body.html;
-					sphereDocument = new VirtualDocument(body.fileSize);
-					(W as any).sphereDocument = sphereDocument;
-					// TODO: load buffer chunks
+					sphereDocument = new VirtualViewport(body.fileSize);
+					(W as any).sphereDocument = sphereDocument;	// add sphDoc to global
+					// TODO: ensure buffer
+					chunker.attachViewport(sphereDocument);
+					chunker.fillBuffer(sphereDocument.offsetTop());
 					// TODO: load font bitmaps onto canvasses
 					// TODO: debounce the scroll so it isn't called excessively
 				}
 				console.log("LX::Sphere", "init", body);
+				const cons = document.getElementById("rfn-console");
+				if (cons) {
+					cons.innerHTML += '<p>init</p>';
+				}
 				// TODO: nag if "large file size warning" exists
 				break;
 			}
@@ -37,9 +47,11 @@ export const Messenger = new MessageHandler(10);
 				// handle undo/redo
 				if (body.type === "undo") {
 					// TODO
+					console.log("LX::Sphere", "unimplemented update 'undo'", body.type);
 				}
 				else if (body.type === "redo") {
 					// TODO
+					console.log("LX::Sphere", "unimplemented update 'redo'", body.type);
 				}
 				else {
 					console.log("LX::Sphere", "unimplemented update type", body.type);

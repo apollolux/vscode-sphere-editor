@@ -28,14 +28,14 @@ interface RFontHeader {
 	readonly characters: number;
 	/** Reserved bytes, 248 */
 	readonly reserved: Uint8Array;
-};
+}
 
-class RFont {
+export class RFont {
 	private _data: Uint8Array = new Uint8Array;
 	private _header: RFontHeader | null = null;
 	images: RImage[] = [];
 
-	__construct(d: Uint8Array) {
+	constructor(d: Uint8Array) {
 		let view = new DataView(d);
 		this._data = d;
 		this._header = {
@@ -48,6 +48,9 @@ class RFont {
 			// process
 			let n = this.init(d.slice(256));
 			// TODO: check n != characters ?
+			if (n !== this._header.characters) {
+				// TODO: error check?
+			}
 		}
 	}
 	public get data(): Uint8Array { return this._data; }
@@ -68,6 +71,7 @@ class RFont {
 				let h = view.getUint16(p+2, true);
 				let r = d.slice(p+4, p+32);
 				p += 32;
+				if (h > _h) _h = h;
 				let bmp: RBitmap = {
 					'width': w,
 					'height': h,
@@ -88,7 +92,7 @@ class RFont {
 		}
 		return ret;
 	}
-};
+}
 
 /****
  * RFN character data
