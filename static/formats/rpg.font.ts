@@ -30,13 +30,15 @@ interface RFontHeader {
 	readonly reserved: Uint8Array;
 }
 
+/** Sphere font class */
 export class RFont {
 	private _data: Uint8Array = new Uint8Array;
 	private _header: RFontHeader | null = null;
+	/** Parsed font glyphs */
 	images: RImage[] = [];
 
 	constructor(d: Uint8Array) {
-		let view = new DataView(d);
+		let view = new DataView(d.buffer);
 		this._data = d;
 		this._header = {
 			'signature': d.slice(0, 4).toString(),
@@ -53,6 +55,7 @@ export class RFont {
 			}
 		}
 	}
+	/** Raw file data */
 	public get data(): Uint8Array { return this._data; }
 
 	/** Process raw bytes into Sphere font */
@@ -67,19 +70,21 @@ export class RFont {
 			let q = -1;
 			let _h = 0;	// font max height for Font.getHeight()
 			while (--i > -1) {
+				let curOffset = p | 0;
 				let w = view.getUint16(p, true);
 				let h = view.getUint16(p+2, true);
 				let r = d.slice(p+4, p+32);
 				p += 32;
 				if (h > _h) _h = h;
+				let z = (w*h)<<2;
 				let bmp: RBitmap = {
 					'width': w,
 					'height': h,
-					'data': new Uint8Array,
+					'data': d.slice(p, p+z),
 					'reserved': r
 				};
-				let z = (w*h)<<2;
-				bmp.data = d.slice(p, p+z);
+				bmp.metadata = { "offset": curOffset };
+				// bmp.data = d.slice(p, p+z);
 				let img: RImage = {
 					'metadata': bmp,
 					'data': parseBitmap(bmp.data)

@@ -6,10 +6,10 @@ import { SphereDocument } from "./common/editor.document";
 const LX_STRICT_DUP = 0;
 
 /** Message packet interface for webview passing */
-interface PacketRequest {
-	initialOffset: number;
-	numElements: number;
-}
+// interface PacketRequest {
+// 	initialOffset: number;
+// 	numElements: number;
+// }
 
 
 // MESSAGE PASSING STUFF

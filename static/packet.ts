@@ -1,6 +1,9 @@
-// import { RBitmap } from "./formats/rpg.bitmap";
+import { RBitmap } from "./formats/rpg.bitmap";
 
 export interface VirtualizedPacket {
 	offset: number;
-	// data: RBitmap;
+	data: Uint8Array;
+}
+export interface VirtualizedBitmapPacket extends VirtualizedPacket {
+	bitmap: RBitmap;
 }

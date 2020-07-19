@@ -15,11 +15,12 @@ export const chunker: ChunkHandler = new ChunkHandler(Messenger);
 
 /** Main entry */
 ((W, D): void => {
+	const I = D.getElementById.bind(D);
 	// TODO: put message handler into front-end messenger like back-end
 	W.addEventListener('message', async e => {
 		// TODO
-		console.log("LX::SPH", "W>MSG", e.source, e.data.requestId, e.data.type, e.data.body);
-		const { type, body } = e.data;
+		const { type, body, requestId } = e.data;
+		console.log("LX::SPH", "W>MSG", e.source, requestId, type, body);
 		switch (type) {
 			case "init": {
 				// TODO: load the html body that was sent over
@@ -31,14 +32,25 @@ export const chunker: ChunkHandler = new ChunkHandler(Messenger);
 					(W as any).sphereDocument = sphereDocument;	// add sphDoc to global
 					// TODO: ensure buffer
 					chunker.attachViewport(sphereDocument);
-					chunker.fillBuffer(sphereDocument.offsetTop());
+					chunker.fillBuffer(sphereDocument.offsetTop(), 4);
 					// TODO: load font bitmaps onto canvasses
 					// TODO: debounce the scroll so it isn't called excessively
 				}
-				console.log("LX::Sphere", "init", body);
-				const cons = document.getElementById("rfn-console");
+				console.log("LX::Sphere", "init", body.signature, body);
+				const cons = I("rfn-console");
 				if (cons) {
-					cons.innerHTML += '<p>init</p>';
+					cons.innerHTML += `<p>init (${body.signature})</p>`;
+				}
+				// get header
+				let hdr_rfn = await chunker.requestRawData(0, 8);
+				if (hdr_rfn) {
+					let view_rfn = new DataView(hdr_rfn.data.buffer);
+					let rfn_ver = view_rfn.getUint16(4, true);
+					let rfn_ch = view_rfn.getUint16(6, true);
+					const rfn_meta = I('ftr-rfn-meta-global');
+					if (rfn_meta) {
+						rfn_meta.textContent = `Version: ${rfn_ver}, # glyphs: ${rfn_ch}`;
+					}
 				}
 				// TODO: nag if "large file size warning" exists
 				break;

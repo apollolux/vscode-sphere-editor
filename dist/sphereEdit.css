@@ -1,0 +1,27 @@
+body	{margin: 0; padding: 0; border: 0;}
+
+/** Sphere editors **/
+#sph	{
+	box-sizing: border-box;
+	min-height: 100%;
+	display: flex; flex-flow: column nowrap;
+	align-content: space-between;
+}
+#sph > *	{flex: 0 0 auto;}
+
+/**** RFN editor ****/
+#hdr-rfn	{box-sizing: border-box;}
+
+#main-rfn	{box-sizing: border-box;}
+#rfn-glyphs-nav	{box-sizing: border-box;}
+#rfn-canvas-wr	{box-sizing: border-box;}
+#rfn-console	{
+	margin: 1rem; padding: 1rem;
+	font-family: monospace;
+	background: rgba(255, 255, 255, 0.1);
+	box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+#ftr-rfn	{box-sizing: border-box;}
+#ftr-rfn-meta-global	{box-sizing: border-box;}
+#ftr-rfn-meta-glyph	{box-sizing: border-box;}
