@@ -1,4 +1,5 @@
 out
+samples
 node_modules
 .vscode-test/
 *.vsix
