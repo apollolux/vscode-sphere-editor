@@ -1,18 +1,92 @@
-body	{margin: 0; padding: 0; border: 0;}
+body	{margin: 0; padding: 0; border: 0; min-height: 100%; min-width: 100%;}
+
+header, main, footer	{margin: 0;}
+input[type="text"]	{box-sizing: border-box; padding: 0; border: 0 solid;}
+
+body	{background: rgba(128, 128, 255, 0.25);}
 
 /** Sphere editors **/
 #sph	{
-	box-sizing: border-box;
-	min-height: 100%;
+	--grid-color-default: var(--vscode-panel-border);
+	--grid-spacing-default: 4;
+	--scale-default: 1;
+	box-sizing: border-box; position: relative;
+	height: 100%;
 	display: flex; flex-flow: column nowrap;
 	align-content: space-between;
 }
 #sph > *	{flex: 0 0 auto;}
+#sph	{background: rgba(255, 0, 0, 0.1);}
+
+/* grid */
+.lx-grid-wr	{
+	--z-index: 0;
+	--mouse-x: -1;
+	--mouse-y: -1;
+	--scale-x: var(--scale-default);
+	--scale-y: var(--scale-default);
+	--grid-spacing-x: var(--grid-spacing-default);
+	--grid-spacing-y: var(--grid-spacing-default);
+	--grid-color: var(--grid-color-default);
+	box-sizing: border-box;
+	display: inline-block;
+	position: relative;
+	z-index: var(--z-index);
+	cursor: crosshair;
+	width: calc(var(--pixel-width) * var(--scale-x) * 1px);
+	height: calc(var(--pixel-height) * var(--scale-y) * 1px);
+}
+.lx-canvas	{
+	box-sizing: border-box;
+	position: relative;
+	transform-origin: left top;
+	/* transform: scale(var(--scale-x), var(--scale-y)); */
+	background: transparent none left top;
+	background-repeat: no-repeat, repeat-y, repeat-x;
+	background-size: cover,
+		100% calc(var(--scale-y) * 1px),
+		calc(var(--scale-x) * 1px) 100%;
+}
+.lx-grid-wr > .lx-canvas	{
+	width: 100%;
+	height: 100%;
+	image-rendering: pixelated;
+}
+.lx-canvas + [data-lx="gridhelper"]	{
+	position: absolute; top: 0; left: 0;
+	/* background-color: rgba(255, 255, 0, 0.75); */
+	background-size: cover,
+		100% calc(var(--scale-y) * var(--grid-spacing-y) * 1px),
+		calc(var(--scale-x) * var(--grid-spacing-x) * 1px) 100%;
+}
+.lx-canvas[data-width]	{
+	--pixel-width: attr(data-width);
+	width: calc(var(--scale-x) * var(--pixel-width) * 1px);
+}
+.lx-canvas[data-height]	{
+	--pixel-height: attr(data-height);
+	height: calc(var(--scale-y) * var(--pixel-height) * 1px);
+}
+.lx-grid-wr[data-lx-cfg-show-lines] > .lx-canvas	{
+	background-image: none,
+		linear-gradient(to bottom, var(--grid-color) 0px, var(--grid-color) 1px, rgba(0,0,0, 0.0) 1px),
+		linear-gradient(to right, var(--grid-color) 0px, var(--grid-color) 1px, rgba(0,0,0, 0.0) 1px);
+}
+.lx-grid-wr:after	{
+	content: ' '; overflow: hidden; background: #66d;
+	position: absolute; z-index: calc(var(--z-index) + 2);
+	top: calc(var(--mouse-y) * var(--scale-y) * 1px);
+	left: calc(var(--mouse-x) * var(--scale-x) * 1px);
+	width: calc(var(--scale-x) * 1px);
+	height: calc(var(--scale-y) * 1px);
+}
 
 /**** RFN editor ****/
 #hdr-rfn	{box-sizing: border-box;}
+#hdr-rfn	{background: rgba(255, 0, 0, 0.1);}
 
 #main-rfn	{box-sizing: border-box;}
+	#sph #main-rfn	{flex-grow: 1;}
 #rfn-glyphs-nav	{box-sizing: border-box;}
 #rfn-canvas-wr	{box-sizing: border-box;}
 #rfn-console	{
@@ -21,7 +95,15 @@ body	{margin: 0; padding: 0; border: 0;}
 	background: rgba(255, 255, 255, 0.1);
 	box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.5);
 }
+#main-rfn	{background: rgba(255, 255, 0, 0.1);}
+
+#rfn-preview	{box-sizing: border-box;}
+#rfn-preview label	{display: flex; flex-flow: row;}
+#rfn-preview label > *	{flex: 1 0 auto;}
+#rfn-preview label input[type="text"]	{background: rgba(255, 255, 255, 0.25);}
 
 #ftr-rfn	{box-sizing: border-box;}
 #ftr-rfn-meta-global	{box-sizing: border-box;}
 #ftr-rfn-meta-glyph	{box-sizing: border-box;}
+#ftr-rfn	{background: rgba(255, 0, 0, 0.1);}
+

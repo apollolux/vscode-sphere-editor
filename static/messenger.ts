@@ -56,6 +56,13 @@ export class MessageHandler {
 	postMessage(type: string, body?: any): void {
 		vscode.postMessage({ type, body });
 	}
+	/** Convenience method to toast an alert message */
+	alert(text: string): void {
+		vscode.postMessage({
+			"command": "alert",
+			"text": text
+		});
+	}
 
 	/**
 	 * @description For every incoming message that isn't the init

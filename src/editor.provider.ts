@@ -97,6 +97,12 @@ export default class SphereEditor implements vscode.CustomEditorProvider<SphereD
 				});
 			}
 		}));
+		// update webview when config changes
+		listeners.push(vscode.workspace.onDidChangeConfiguration((e) => {
+			const config = vscode.workspace.getConfiguration("sphereEdit");
+			// TODO: instance.panel.webview.postMessage({e})
+			console.log("LX::SPH", "CFG", config, e.affectsConfiguration("sphereEdit.font.zoom"));
+		}));
 		document.onDidDispose(() => disposeAll(listeners));
 		return document;
 		// throw new Error("Method not implemented.");

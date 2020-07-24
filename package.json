@@ -14,6 +14,33 @@
 		"onCommand:sphereEdit.openFont"
 	],
 	"contributes": {
+		"configuration": {
+			"title": "Sphere Engine Editor",
+			"properties": {
+				"sphereEdit.font.list.zoom": {
+					"type": "integer",
+					"default": 1,
+					"description": "Zoom factor of font glyph list"
+				},
+				"sphereEdit.font.glyph.zoom": {
+					"type": "string",
+					"default": "fill",
+					"description": "Zoom method of glyph panel",
+					"enum": ["fill", "scale"],
+					"enumDescriptions": [
+						"Zoom the glyph panel to fit the available space",
+						"Zoom the glyph panel by a numerical scale"
+					]
+				},
+				"sphereEdit.font.glyph.zoomScale": {
+					"type": "integer",
+					"default": 1,
+					"minimum": 1,
+					"maximum": 32,
+					"markdownDescription": "Zoom the glyph panel by this scale of the glyph's size. Applies when `#sphereEdit.font.glyph.zoom#` is set to `scale`."
+				}
+			}
+		},
 		"commands": [
 			{
 				"command": "sphereEdit.message",

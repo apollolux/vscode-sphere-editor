@@ -6,6 +6,11 @@ import { VirtualViewport } from "./viewport";
 import { ChunkHandler } from "./buffer";
 import { MessageHandler } from "./messenger";
 
+import { RFont } from "./formats/rpg.font";
+// import { blitTo } from "./formats/rpg.bitmap";
+
+import { Grid } from "./lx/grid";
+
 declare const acquireVsCodeApi: any;
 export const vscode = acquireVsCodeApi();
 
@@ -16,18 +21,39 @@ export const chunker: ChunkHandler = new ChunkHandler(Messenger);
 /** Main entry */
 ((W, D): void => {
 	const I = D.getElementById.bind(D);
+	// const E = D.createElement.bind(D);
+	let rfn: RFont;
+	function _set_preview_text(txt: string): void {
+		const state = vscode.getState();
+		let rfn_preview = state?.rfn?.preview || txt;
+		if (txt && rfn_preview !== txt) {
+			let rfn_state = Object.assign({}, state, { "rfn": {
+				"preview": txt
+			} });
+			vscode.setState(rfn_state);
+			// TODO: update preview render
+		}
+	}
+	function _upd_preview(e: Event): void {
+		let el = e.target;
+		let txt = el ? (el as HTMLInputElement).value : '';
+		_set_preview_text(txt);
+	}
 	// TODO: put message handler into front-end messenger like back-end
 	W.addEventListener('message', async e => {
 		// TODO
 		const { type, body, requestId } = e.data;
+		const state = vscode.getState();
+		// const config = vscode.workspace.getConfiguration("sphereEdit");
 		console.log("LX::SPH", "W>MSG", e.source, requestId, type, body);
 		switch (type) {
 			case "init": {
 				// TODO: load the html body that was sent over
 				if (body.html) {
 					// TODO
-					const doc = D.body;
-					doc.innerHTML = body.html;
+					const doc = I('sph');
+					if (doc) doc.innerHTML = body.html;
+					else D.body.innerHTML = body.html, D.body.id = 'sph';
 					sphereDocument = new VirtualViewport(body.fileSize);
 					(W as any).sphereDocument = sphereDocument;	// add sphDoc to global
 					// TODO: ensure buffer
@@ -40,17 +66,55 @@ export const chunker: ChunkHandler = new ChunkHandler(Messenger);
 				const cons = I("rfn-console");
 				if (cons) {
 					cons.innerHTML += `<p>init (${body.signature})</p>`;
+					// cons.innerHTML += `<p>list zoom: ${config.list.zoom}</p>`;
+					// cons.innerHTML += `<p>glyph zoom: ${config.glyph.zoom}</p>`;
+					// cons.innerHTML += `<p>glyph scale: ${config.glyph.zoomScale}</p>`;
 				}
+				let rfn_preview = state?.rfn?.preview || 'What a beautiful day for laundry!';
+				let rfn_glyph = state?.rfn?.glyph || 65;
 				// get header
-				let hdr_rfn = await chunker.requestRawData(0, 8);
+				let hdr_rfn = await chunker.requestRawData(0, 256);
 				if (hdr_rfn) {
 					let view_rfn = new DataView(hdr_rfn.data.buffer);
-					let rfn_ver = view_rfn.getUint16(4, true);
+					rfn = new RFont(hdr_rfn.data);
+					let rfn_ver = rfn.version;	// view_rfn.getUint16(4, true);
 					let rfn_ch = view_rfn.getUint16(6, true);
+					let rfn_data = await chunker.requestRawData(256, body.fileSize);
+					let n = rfn.init(rfn_data.data);
+					const inp_preview = I('rfn-preview-text');
+					if (inp_preview) {
+						(inp_preview as HTMLInputElement).value = rfn_preview;
+						inp_preview.addEventListener("input", _upd_preview);
+					}
 					const rfn_meta = I('ftr-rfn-meta-global');
 					if (rfn_meta) {
-						rfn_meta.textContent = `Version: ${rfn_ver}, # glyphs: ${rfn_ch}`;
+						rfn_meta.textContent = `RFNv${rfn_ver}, # glyphs: ${n} (expected ${rfn_ch})`;
 					}
+					const rfn_can = I('rfn-canvas-wr');
+					if (rfn_can) {
+						let gr = Grid.create(16, 32);
+						gr.id = 'rfn-canvas';
+						// let can = E('canvas');
+						// can.id = 'rfn-canvas';
+						// can.width = 32; can.height = 32;
+						// can.classList.add('lx-canvas');
+						// can.style.setProperty("--mouse-x", `12`);
+						// can.style.setProperty("--mouse-y", `20`);
+						// let gr = new Grid(can);
+						gr.zoom = 4;
+						gr.appendTo(rfn_can);
+						// rfn_can.appendChild(gr.element);
+						let bmp = rfn.getCharacterImage(rfn_glyph);
+						let ctx = gr.element.getContext('2d');
+						// if (ctx) blitTo(ctx, bmp, 0, 0, gr.scaleX, gr.scaleY);
+						if (bmp && ctx) bmp.blitTo(ctx, 0, 0);
+					}
+					let rfn_state = Object.assign({}, state, { "rfn": {
+						"preview": rfn_preview,
+						"glyph": rfn_glyph
+					} });
+					vscode.setState(rfn_state);
+					Messenger.alert(`RFNv${rfn_ver}, # glyphs: ${n} (expected ${rfn_ch})`);
 				}
 				// TODO: nag if "large file size warning" exists
 				break;
