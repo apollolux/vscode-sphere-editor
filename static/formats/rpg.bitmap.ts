@@ -57,13 +57,13 @@ export class RImage {
 		}
 		return ret;
 	}
-	public blitTo(ctx: CanvasRenderingContext2D, x: number, y: number, sx: number = 1, sy: number = 1): void {
+	public blitTo(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, x: number, y: number, sx: number = 1, sy: number = 1): void {
 		// TODO
 		console.log("LX::IMG", "blit", x, y, this.width, this.height, sx, sy);
-		let sm = ctx.imageSmoothingEnabled;
-		ctx.imageSmoothingEnabled = false;
+		// let sm = ctx.imageSmoothingEnabled;
+		// ctx.imageSmoothingEnabled = false;
 		ctx.drawImage(this._canvas, x, y, sx * this.width, sy * this.height);
-		ctx.imageSmoothingEnabled = sm;
+		// ctx.imageSmoothingEnabled = sm;
 	}
 	public rebuildCache(): void {
 		let ctx = this._canvas.getContext('2d');

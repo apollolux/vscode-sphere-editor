@@ -9,7 +9,9 @@ import { MessageHandler } from "./messenger";
 import { RFont } from "./formats/rpg.font";
 // import { blitTo } from "./formats/rpg.bitmap";
 
-import { Grid } from "./lx/grid";
+// import { Grid } from "./lx/grid";
+// import { Palette } from "./lx/palette";
+import { NCanvas } from "./lx/canvas";
 
 declare const acquireVsCodeApi: any;
 export const vscode = acquireVsCodeApi();
@@ -92,8 +94,12 @@ export const chunker: ChunkHandler = new ChunkHandler(Messenger);
 					}
 					const rfn_can = I('rfn-canvas-wr');
 					if (rfn_can) {
-						let gr = Grid.create(16, 32);
-						gr.id = 'rfn-canvas';
+						let bmp = rfn.getCharacterImage(rfn_glyph);
+						let ncanvas = new NCanvas(bmp.width, bmp.height);
+						ncanvas.id = 'rfn-canvas';
+						ncanvas.zoom = 16;
+						// let gr = Grid.create(bmp.width, bmp.height);
+						// gr.id = 'rfn-canvas';
 						// let can = E('canvas');
 						// can.id = 'rfn-canvas';
 						// can.width = 32; can.height = 32;
@@ -101,13 +107,21 @@ export const chunker: ChunkHandler = new ChunkHandler(Messenger);
 						// can.style.setProperty("--mouse-x", `12`);
 						// can.style.setProperty("--mouse-y", `20`);
 						// let gr = new Grid(can);
-						gr.zoom = 4;
-						gr.appendTo(rfn_can);
+						// gr.zoom = 16;
+						// gr.appendTo(rfn_can);
+						rfn_can.append(ncanvas.container);
 						// rfn_can.appendChild(gr.element);
-						let bmp = rfn.getCharacterImage(rfn_glyph);
-						let ctx = gr.element.getContext('2d');
+						let ctx = ncanvas.element.getContext('2d');
 						// if (ctx) blitTo(ctx, bmp, 0, 0, gr.scaleX, gr.scaleY);
-						if (bmp && ctx) bmp.blitTo(ctx, 0, 0);
+						// if (bmp && ctx) bmp.blitTo(ctx, 0, 0);
+						ncanvas.canvas.blitImage(bmp, 0, 0);
+						// let pal = new Palette(4, 2, 32);
+						// pal.id = 'rfn-palette';
+						// pal.add(
+						// 	{ red: 255, green: 255, blue: 128, alpha: 255 },
+						// 	{ red: 128, green: 224, blue: 255, alpha: 192 }
+						// );
+						// rfn_can.append(pal.container);
 					}
 					let rfn_state = Object.assign({}, state, { "rfn": {
 						"preview": rfn_preview,

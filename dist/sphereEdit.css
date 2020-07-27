@@ -7,6 +7,7 @@ body	{background: rgba(128, 128, 255, 0.25);}
 
 /** Sphere editors **/
 #sph	{
+	--cursor-color-default: transparent;
 	--grid-color-default: var(--vscode-panel-border);
 	--grid-spacing-default: 4;
 	--scale-default: 1;
@@ -19,6 +20,9 @@ body	{background: rgba(128, 128, 255, 0.25);}
 #sph	{background: rgba(255, 0, 0, 0.1);}
 
 /* grid */
+.lx-canvas	{
+	display: block;
+}
 .lx-grid-wr	{
 	--z-index: 0;
 	--mouse-x: -1;
@@ -28,11 +32,15 @@ body	{background: rgba(128, 128, 255, 0.25);}
 	--grid-spacing-x: var(--grid-spacing-default);
 	--grid-spacing-y: var(--grid-spacing-default);
 	--grid-color: var(--grid-color-default);
+	--cursor-color-fg: var(--cursor-color-default);
+	--cursor-color-bg: var(--cursor-color-default);
 	box-sizing: border-box;
 	display: inline-block;
 	position: relative;
 	z-index: var(--z-index);
+	vertical-align: top;
 	cursor: crosshair;
+	cursor: url("./img/precise.cur"), crosshair;
 	width: calc(var(--pixel-width) * var(--scale-x) * 1px);
 	height: calc(var(--pixel-height) * var(--scale-y) * 1px);
 }
@@ -72,13 +80,30 @@ body	{background: rgba(128, 128, 255, 0.25);}
 		linear-gradient(to bottom, var(--grid-color) 0px, var(--grid-color) 1px, rgba(0,0,0, 0.0) 1px),
 		linear-gradient(to right, var(--grid-color) 0px, var(--grid-color) 1px, rgba(0,0,0, 0.0) 1px);
 }
+.lx-grid-wr[data-lx-pos]	{
+	margin-bottom: 2rem;
+}
+.lx-grid-wr[data-lx-pos]:before	{
+	content: attr(data-lx-pos); display: block;
+	position: absolute; z-index: calc(var(--z-index) + 2);
+	bottom: -1em; left: 0;
+	font-size: 0.75rem; line-height: 1;
+}
 .lx-grid-wr:after	{
-	content: ' '; overflow: hidden; background: #66d;
+	content: ' '; overflow: hidden;
 	position: absolute; z-index: calc(var(--z-index) + 2);
 	top: calc(var(--mouse-y) * var(--scale-y) * 1px);
 	left: calc(var(--mouse-x) * var(--scale-x) * 1px);
-	width: calc(var(--scale-x) * 1px);
-	height: calc(var(--scale-y) * 1px);
+	width: 0; height: 0;
+	border-style: solid;
+	border-top-color: var(--cursor-color-fg);
+	border-left-color: var(--cursor-color-fg);
+	border-right-color: var(--cursor-color-bg);
+	border-bottom-color: var(--cursor-color-bg);
+	border-left-width: calc(var(--scale-x) * 0.5 * 1px);
+	border-top-width: calc(var(--scale-y) * 0.5 * 1px);
+	border-right-width: calc(var(--scale-x) * 0.5 * 1px);
+	border-bottom-width: calc(var(--scale-y) * 0.5 * 1px);
 }
 
 /**** RFN editor ****/

@@ -4,6 +4,11 @@
 	"displayName": "Sphere Engine Font Editor",
 	"version": "1.0.0",
 	"description": "Sphere RFN editor",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/sphere-group/vscode-sphere-editor"
+	},
+	"icon": "sphere.png",
 	"main": "./out/src/extension.js",
 	"engines": {
 		"vscode": "^1.46.0"
