@@ -3,20 +3,25 @@
  * messenger.ts
  */
 
- /**
+/**
  * messenger.ts : MessageHandler
  * Copyright (c) Microsoft Corporation.
  * Licensed under the MIT license.
  */
 
-import { vscode } from "./bundle";
+import { vscode } from "./global";
+
+interface ExpectedMsg {
+	resolve: (value?: any) => void;
+	reject: (reason?: any) => void;
+}
 
 /**
  * Class which handles messages between the webview and the exthost
  */
 export class MessageHandler {
 	private maxRequests: number;
-	private requestsMap: Map<number, { resolve: (value?: any) => void; reject: (reason?: any) => void }>;
+	private requestsMap: Map<number, ExpectedMsg>;
 	private requestId: number;
 
 	/**
@@ -25,7 +30,7 @@ export class MessageHandler {
 	 */
 	constructor(maximumRequests: number) {
 		this.maxRequests = maximumRequests;
-		this.requestsMap = new Map<number, { resolve: (value?: any) => void; reject: (reason?: any) => void }>();
+		this.requestsMap = new Map<number, ExpectedMsg>();
 		this.requestId = 0;
 	}
 
@@ -58,8 +63,7 @@ export class MessageHandler {
 	}
 	/** Convenience method to toast an alert message */
 	alert(text: string): void {
-		vscode.postMessage({
-			"command": "alert",
+		this.postMessage("alert", {
 			"text": text
 		});
 	}

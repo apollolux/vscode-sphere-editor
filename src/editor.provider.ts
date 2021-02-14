@@ -191,6 +191,17 @@ export default class SphereEditor implements vscode.CustomEditorProvider<SphereD
 	// MESSENGER
 	private initMessenger(): void {
 		// TODO
+		this.lxMsgr.setHandler("alert", (panel: vscode.WebviewPanel, document: SphereDocument, msg: any) => {
+			const request = msg.body;
+			vscode.window.showInformationMessage(request.text);
+		});
+		this.lxMsgr.setHandler("canvasUpdate", (panel: vscode.WebviewPanel, document: SphereDocument, msg: any) => {
+			const request = msg.body;
+			console.log(
+				"LX::SPH", "PLOT",
+				request
+			);
+		});
 		this.lxMsgr.setHandler("packet", (panel: vscode.WebviewPanel, document: SphereDocument, msg: any) => {
 			const request = msg.body as PacketRequest;
 			// Return the data requested and the offset it was requested for
@@ -210,7 +221,7 @@ export default class SphereEditor implements vscode.CustomEditorProvider<SphereD
 				if (edit.offset >= request.initialOffset && edit.offset < request.initialOffset + request.count) {
 					edits.push(edit);
 					// If it wasn't in the document before we will add it to the disk contents
-					if (edit.oldValue === undefined && edit.newValue !== undefined) {
+					if (edit.oldBytes === undefined && edit.newBytes !== undefined) {
 						// packet.push(edit.newValue);
 					}
 				}

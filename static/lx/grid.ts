@@ -1,6 +1,10 @@
+import * as LX from "./consts";
+import { NConfig, camelToDash, dashToCamel } from "./config";
+
 import { RColor } from "../formats/rpg.internal";
 import { RImage } from "../formats/rpg.bitmap";
 import { Color } from "../formats/color";
+import { NWidget } from "./widget";
 
 const E = document.createElement.bind(document);
 
@@ -10,7 +14,7 @@ interface Position {
 	z?: number;
 }
 
-interface GridConfig {
+interface GridConfig extends NConfig {
 	showLines: boolean;
 	imageSmoothingEnabled: boolean;
 }
@@ -19,9 +23,16 @@ const CFG_DEFAULT: GridConfig = {
 	"showLines": true,
 	"imageSmoothingEnabled": false
 };
+function cfgToData(k: keyof GridConfig): string {
+	return dashToCamel(`lxCfg-${k}`);
+}
+function attrToProp(attr: string): string {
+	if (attr.startsWith("data-")) return dashToCamel(attr.substring(6));
+	else return dashToCamel(attr);
+}
 
 /** Canvas wrapper */
-export class Grid {
+export class Grid implements NWidget {
 	public static create(w: number, h: number): Grid {
 		let c = E('canvas');
 		c.width = w;
@@ -29,15 +40,28 @@ export class Grid {
 		return new Grid(c);
 	}
 
+	/** Watchers for NWidget notifying */
+	private _subscribers: HTMLElement[];
+
+	/** Grid ID */
 	private _id: string;
+	/** Visual scaling factors */
 	private _scale: Position = { "x": 1, "y": 1, "z": 1 };
+	/** Raw mouse position */
 	private _mouse: Position = { "x": -1, "y": -1, "z": 0 };
+	/** Adjusted mouse position */
 	private _mouse_adjusted: Position = { "x": -1, "y": -1, "z": 0 };
+	/** Grid container */
 	private _wrapper: HTMLElement;
+	/** Context for grid canvas */
 	private _context: CanvasRenderingContext2D | null;
+	/** Grid overlay */
 	private _helper: HTMLCanvasElement;
+	/** Backbuffer canvas */
 	private _buffer: OffscreenCanvas;
+	/** Raw pixel data from backbuffer */
 	private _data: ImageData;
+	/** Grid settings */
 	private _config: GridConfig;
 	// buffering
 	private _updates: number[] = [];
@@ -46,25 +70,19 @@ export class Grid {
 	constructor(
 		private readonly _element: HTMLCanvasElement
 	) {
+		this._subscribers = [];
 		this._context = this._element.getContext('2d');
 		if (!this._context) throw new Error("Cannot create grid, no canvas context");
 		this._buffer = new OffscreenCanvas(this._element.width, this._element.height);
-		this._wrapper = E('grid');
-		this._wrapper.classList.add("lx-grid-wr");
-		this._id = this._element.id || "lx-grid-default-id";
+		this._wrapper = E(LX.EL_GRID);
+		this._wrapper.classList.add(LX.CL_GRID_WR);
+		this._id = this._element.id || LX.ID_GRID_WR_DEF;
 		this._wrapper.id = `${this._id}-wr`;
-		// this._element.dataset["width"] = `${this._element.width}`;
-		this._wrapper.style.setProperty("--pixel-width", `${this._element.width}`);
-		// this._element.dataset["height"] = `${this._element.height}`;
-		this._wrapper.style.setProperty("--pixel-height", `${this._element.height}`);
 		this._helper = E('canvas');
 		this._helper.id = `${this._id}-helper`;
-		this._helper.classList.add("lx-canvas");
-		this._helper.dataset['lx'] = "gridhelper";
-		this._helper.width = this._element.width;
-		this._helper.height = this._element.height;
-		this._element.classList.add("lx-canvas");	// .lx-canvas for CSS/querySelector
-		this._wrapper.append(this._element, this._helper);
+		this._helper.classList.add(LX.CL_GRID_EL);
+		this._helper.dataset['lx'] = LX.ATTR_GRID_AUX;
+		this._element.classList.add(LX.CL_GRID_EL);	// .lx-canvas for CSS/querySelector
 		let c = this._buffer.getContext('2d');
 		if (!c) {
 			this._data = this._context.getImageData(
@@ -110,27 +128,49 @@ export class Grid {
 	/** Set grid scale-x factor */
 	public set scaleX(n: number) {
 		this._scale.x = n;
-		this._wrapper.style.setProperty("--scale-x", `${n}`);
-		// this._element.style.setProperty("--scale-x", `${n}`);
-		// this._helper.style.setProperty("--scale-x", `${n}`);
+		this._wrapper.style.setProperty(LX.CSS_SX, `${n}`);
+		// this._element.style.setProperty(LX.CSS_SX, `${n}`);
+		// this._helper.style.setProperty(LX.CSS_SX, `${n}`);
 	}
 	/** Get grid scale-y factor */
 	public get scaleY(): number { return this._scale.y; }
 	/** Set grid scale-y factor */
 	public set scaleY(n: number) {
 		this._scale.y = n;
-		this._wrapper.style.setProperty("--scale-y", `${n}`);
-		// this._element.style.setProperty("--scale-y", `${n}`);
-		// this._helper.style.setProperty("--scale-y", `${n}`);
+		this._wrapper.style.setProperty(LX.CSS_SY, `${n}`);
+		// this._element.style.setProperty(LX.CSS_SY, `${n}`);
+		// this._helper.style.setProperty(LX.CSS_SY, `${n}`);
+	}
+
+	public subscribe(el: HTMLElement): void {
+		let i = this.subscriber(el);
+		if (i < 0) this._subscribers.push(el);
+	}
+	public unsubscribe(el: HTMLElement): void {
+		let i = this.subscriber(el);
+		if (i > -1) this._subscribers.splice(i, 1);
+	}
+	public subscriber(el: HTMLElement): number {
+		return this._subscribers.findIndex((it) => (it === el));
+	}
+	public build(): HTMLElement {
+		this._wrapper.style.setProperty(LX.CSS_PX_W, `${this._element.width}`);
+		this._wrapper.style.setProperty(LX.CSS_PX_H, `${this._element.height}`);
+		this._helper.width = this._element.width;
+		this._helper.height = this._element.height;
+		this._wrapper.append(this._element, this._helper);
+		return this._wrapper;
 	}
 
 	/** Init the grid */
 	public init(): void {
 		if (this._context) {
 			this.zoom = 1;
+			this.config("showLines");
+			this.config("imageSmoothingEnabled");
 			this._context.imageSmoothingEnabled = this._config.imageSmoothingEnabled;
-			if (this._config.showLines) this._wrapper.dataset['lxCfgShowLines'] = 'lines';
-			else delete this._wrapper.dataset['lxCfgShowLines'];
+			// if (this._config.showLines) this._wrapper.dataset['lxCfgShowLines'] = LX.ATTR_GRID_CFG_LINES;
+			// else delete this._wrapper.dataset['lxCfgShowLines'];
 			this._wrapper.addEventListener("lxUpdate", this.update.bind(this));
 			this._wrapper.addEventListener("lxPlot", this.pixel.bind(this));
 			this._wrapper.addEventListener("mousemove", this.mousemove.bind(this));
@@ -140,7 +180,7 @@ export class Grid {
 	}
 	/** Get pixel at given position, transparent if non-existent */
 	public at(x: number, y: number): RColor {
-		let ret: RColor = Color.transparent;
+		let ret: RColor = Color.transparent();
 		if (x < 0 || y < 0 || x >= this.width || y >= this.height) return ret;
 		let i = (y * this.width + x), z = i << 2;
 		if (z >= this._data.data.length) return ret;
@@ -155,13 +195,15 @@ export class Grid {
 	public plot(x: number, y: number, c: RColor): void {
 		// TODO: plot pixel
 		if (x < 0 || y < 0 || x >= this.width || y >= this.height) return;
-		this._wrapper.dispatchEvent(new CustomEvent("lxPlot", {
+		let det: any = {
 			"detail": {
+				"src": this,
 				"x": x,
 				"y": y,
 				"color": c
 			}
-		}));
+		};
+		this._wrapper.dispatchEvent(new CustomEvent("lxPlot", det));
 	}
 	/** Blit an image onto the grid */
 	public blitImage(img: RImage, x: number, y: number): void {
@@ -192,8 +234,8 @@ export class Grid {
 		this._element.width = w; this._element.height = h;
 		this._helper.width = this._element.width;
 		this._helper.height = this._element.height;
-		this._wrapper.style.setProperty("--pixel-width", `${this._element.width}`);
-		this._wrapper.style.setProperty("--pixel-height", `${this._element.height}`);
+		this._wrapper.style.setProperty(LX.CSS_PX_W, `${this._element.width}`);
+		this._wrapper.style.setProperty(LX.CSS_PX_H, `${this._element.height}`);
 		if (this._element.width < this._data.width) {
 			// TODO: horizontal scrolling?
 		}
@@ -214,6 +256,13 @@ export class Grid {
 		}
 	}
 
+	/** Set config value for dataset */
+	private config(k: keyof GridConfig, v?: boolean): void {
+		if (v !== undefined) this._config[k] = v;
+		let d: string = cfgToData(k);
+		if (this._config[k]) this._wrapper.dataset[d] = d;	// LX.ATTR_GRID_CFG_LINES;
+		else delete this._wrapper.dataset[d];
+	}
 	/** Set a pixel */
 	private pixel(ev: Event): void {
 		let detail = (ev as CustomEvent).detail;
@@ -222,7 +271,7 @@ export class Grid {
 		let c: RColor = detail.color;
 		let i = (y * this.width + x), z = i << 2;
 		if (z < this._data.data.length) {
-			console.log("LX::Grid", "pixel", ev.type, z, x, y, c);
+			// console.log("LX::Grid", "pixel", ev.type, z, x, y, c);
 			this._data.data[z + 0] = c.red;
 			this._data.data[z + 1] = c.green;
 			this._data.data[z + 2] = c.blue;
@@ -242,7 +291,7 @@ export class Grid {
 	private update(ev: Event): void {
 		// TODO: flip dirty pixels to front
 		if (this._context) {
-			console.log("LX::Grid", "update", ev.type, this._updates.slice());
+			console.log("LX::Grid", "update", ev.type, this._updates.slice().length);
 			let d = this._context.getImageData(0, 0, this.width, this.height);
 			while (this._updates.length) {
 				let z = this._updates.shift() || 0;
@@ -269,15 +318,15 @@ export class Grid {
 			this._mouse_adjusted.x = cx;
 			this._mouse_adjusted.y = cy;
 			// console.log("LX::Grid", "move", mx, my, cx, cy);
-			this._wrapper.style.setProperty("--mouse-x", `${cx}`);
-			this._wrapper.style.setProperty("--mouse-y", `${cy}`);
-			// this._element.style.setProperty("--mouse-x", `${cx}`);
-			// this._element.style.setProperty("--mouse-y", `${cy}`);
-			// this._helper.style.setProperty("--mouse-x", `${cx}`);
-			// this._helper.style.setProperty("--mouse-y", `${cy}`);
+			this._wrapper.style.setProperty(LX.CSS_MOUSE_X, `${cx}`);
+			this._wrapper.style.setProperty(LX.CSS_MOUSE_Y, `${cy}`);
+			// this._element.style.setProperty(LX.CSS_MOUSE_X, `${cx}`);
+			// this._element.style.setProperty(LX.CSS_MOUSE_Y, `${cy}`);
+			// this._helper.style.setProperty(LX.CSS_MOUSE_X, `${cx}`);
+			// this._helper.style.setProperty(LX.CSS_MOUSE_Y, `${cy}`);
 			// TODO: hook display of grid pos, px at pos?
 			let c = this.at(cx, cy);
-			this._wrapper.dataset["lxPos"] = `(${cx}, ${cy}, ${Color.toHex(c)})`;
+			this._wrapper.dataset["lxPos"] = `(${cx}, ${cy}, ${Color.toHex(c, false)})`;
 		}
 	}
 }

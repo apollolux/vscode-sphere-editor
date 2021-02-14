@@ -22,27 +22,58 @@
 		"configuration": {
 			"title": "Sphere Engine Editor",
 			"properties": {
-				"sphereEdit.font.list.zoom": {
-					"type": "integer",
-					"default": 1,
-					"description": "Zoom factor of font glyph list"
+				"sphereEditor.font.list.background.type": {
+					"scope": "resource",
+					"description": "Background of glyphs in glyph list",
+					"type": "string",
+					"default": "none",
+					"enum": ["none", "solid", "checkered"],
+					"enumDescriptions": [
+						"Transparent background",
+						"Single-color background",
+						"Two-color checkered background"
+					]
 				},
-				"sphereEdit.font.glyph.zoom": {
+				"sphereEditor.font.list.background.color.primary": {
+					"scope": "resource",
+					"markdownDescription": "Background color for glyphs in glyph list. The color when `#sphereEditor.font.list.background.type#` is set to `solid`, and the first color when `#sphereEditor.font.list.background.type#` is set to `checkered`.",
+					"type": "string",
+					"default": "#00000000",
+					"pattern": "^#([0-9A-Fa-f]{2}){3,4}$",
+					"patternErrorMessage": "Invalid color format. Use #RRGGBB or #RRGGBBAA"
+				},
+				"sphereEditor.font.list.background.color.secondary": {
+					"scope": "resource",
+					"markdownDescription": "Background color for glyphs in glyph list. The second color when `#sphereEditor.font.list.background.type#` is set to `checkered`.",
+					"type": "string",
+					"default": "#00000000",
+					"pattern": "^#([0-9A-Fa-f]{2}){3,4}$",
+					"patternErrorMessage": "Invalid color format. Use #RRGGBB or #RRGGBBAA"
+				},
+				"sphereEditor.font.list.zoom": {
+					"scope": "resource",
+					"description": "Zoom factor of font glyph list",
+					"type": "integer",
+					"default": 1
+				},
+				"sphereEditor.font.glyph.zoom": {
+					"scope": "resource",
+					"description": "Zoom method of glyph panel",
 					"type": "string",
 					"default": "fill",
-					"description": "Zoom method of glyph panel",
 					"enum": ["fill", "scale"],
 					"enumDescriptions": [
 						"Zoom the glyph panel to fit the available space",
 						"Zoom the glyph panel by a numerical scale"
 					]
 				},
-				"sphereEdit.font.glyph.zoomScale": {
+				"sphereEditor.font.glyph.zoomScale": {
+					"scope": "resource",
+					"markdownDescription": "Zoom the glyph panel by this scale of the glyph's size. Applies when `#sphereEditor.font.glyph.zoom#` is set to `scale`.",
 					"type": "integer",
 					"default": 1,
 					"minimum": 1,
-					"maximum": 32,
-					"markdownDescription": "Zoom the glyph panel by this scale of the glyph's size. Applies when `#sphereEdit.font.glyph.zoom#` is set to `scale`."
+					"maximum": 32
 				}
 			}
 		},

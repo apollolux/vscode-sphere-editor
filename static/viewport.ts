@@ -27,8 +27,9 @@ export class VirtualViewport {
 			// TODO
 			msg.push(`Offset: ${packets[i].offset}`);
 		}
-		const cons = document.getElementById("rfn-console");
-		if (cons) cons.innerHTML += '<p>' + (`(${packets.length})`) + (msg.join('<br/>') || 'No data received!') + '</p>';
+		// TODO
+		// const cons = document.getElementById("rfn-console");
+		// if (cons) cons.innerHTML += '<p>' + (`(${packets.length})`) + (msg.join('<br/>') || 'No data received!') + '</p>';
 	}
 	public offsetTop(): number {
 		// TODO

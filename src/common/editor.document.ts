@@ -5,8 +5,8 @@ import { Disposable } from "./dispose";
 
 /** Document edit-state for raw binary */
 export interface SphereDocumentState {
-	readonly oldValue: number | undefined;
-	readonly newValue: number | undefined;
+	oldBytes: number | undefined;
+	newBytes: number | undefined;
 	readonly offset: number;
 	sameOnDisk: boolean;
 }
@@ -104,16 +104,16 @@ export class SphereDocument extends Disposable implements vscode.CustomDocument 
 				if (this._unsavedEdits[this._unsavedEdits.length - 1] === undoneEdit) {
 					this._unsavedEdits.pop();
 				}
-				else if (undoneEdit.oldValue === undefined) {
+				else if (undoneEdit.oldBytes === undefined) {
 					this.unsavedEdits.push({
-						newValue: undefined,
-						oldValue: undoneEdit.newValue,
+						newBytes: undefined,
+						oldBytes: undoneEdit.newBytes,
 						offset: undoneEdit.offset,
 						sameOnDisk: undoneEdit.sameOnDisk
 					});
 				}
 				// If the value is the same as what's on disk we want to let the webview know in order to mark a cell dirty
-				undoneEdit.sameOnDisk = undoneEdit.oldValue !== undefined && undoneEdit.oldValue === this.data[undoneEdit.offset] || false;
+				undoneEdit.sameOnDisk = undoneEdit.oldBytes !== undefined && undoneEdit.oldBytes === this.data[undoneEdit.offset] || false;
 				this._onDidChangeDocument.fire({
 					fileSize: this.filesize,
 					type: "undo",
@@ -124,7 +124,7 @@ export class SphereDocument extends Disposable implements vscode.CustomDocument 
 				this._edits.push(edit);
 				this._unsavedEdits.push(edit);
 				const redoneEdit = edit;
-				redoneEdit.sameOnDisk = redoneEdit.offset < this._size && redoneEdit.newValue === this.data[redoneEdit.offset] || false;
+				redoneEdit.sameOnDisk = redoneEdit.offset < this._size && redoneEdit.newBytes === this.data[redoneEdit.offset] || false;
 				this._onDidChangeDocument.fire({
 					fileSize: this.filesize,
 					type: "redo",
